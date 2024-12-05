@@ -3,6 +3,7 @@
 # Python 3 is recommended for interpreting this.
 import pdfkit
 import atexit
+import socket
 from nbconvert import HTMLExporter
 from sys import argv
 from os.path import exists
@@ -15,6 +16,18 @@ def callback():
     if output_file_name != '':
         if exists(output_file_name):
             print("'%s' generated!\n" % output_file_name)
+
+def am_online():
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        s.connect(('8.8.8.8', 443))
+    except OSError:
+        return False
+    except:
+        return False
+    finally:
+        s.close()
+    return True
 
 if len(argv) == 1:
     exit(usage)
@@ -35,6 +48,11 @@ if exists(output_file_name):
     exit("[Error] '%s' already exists." % output_file_name)
 elif not exists(input_file_name):
     exit("[Error] '%s' doesn't exist." % input_file_name)
+
+if am_online():
+    if input("[!] You seem to be online rather than offline. Are you sure to continue? [y/N]") not in ('Y', 'y'):
+        print("Exiting...")
+        exit(1)
 
 atexit.register(callback)
 
